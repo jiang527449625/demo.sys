@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.sys.dao.TSysUserMapper">
+    <resultMap id="BaseResultMap" type="com.demo.domain.model.sys.entity.TSysUser">
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="USER_ACCOUNT" jdbcType="VARCHAR" property="userAccount"/>
+        <result column="USER_PASSWORD" jdbcType="VARCHAR" property="userPassword"/>
+        <result column="USER_REAL_NAME" jdbcType="VARCHAR" property="userRealName"/>
+        <result column="USER_GENDER" jdbcType="VARCHAR" property="userGender"/>
+        <result column="USER_TELEPHONE" jdbcType="VARCHAR" property="userTelephone"/>
+        <result column="ORG_UUID" jdbcType="VARCHAR" property="orgUuid"/>
+        <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+        <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+        <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+        <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+        <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+        <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+        <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+        <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+    </resultMap>
+
+    <sql id="column_alias">
+        TSR.ID AS "TSR_ID"
+    </sql>
+
+    <resultMap id="DTOResultMap" type="com.demo.domain.model.sys.dto.TSysUserDto">
+        <!--用户表-->
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="USER_ACCOUNT" jdbcType="VARCHAR" property="userAccount"/>
+        <result column="USER_PASSWORD" jdbcType="VARCHAR" property="userPassword"/>
+        <result column="USER_REAL_NAME" jdbcType="VARCHAR" property="userRealName"/>
+        <result column="USER_GENDER" jdbcType="VARCHAR" property="userGender"/>
+        <result column="USER_TELEPHONE" jdbcType="VARCHAR" property="userTelephone"/>
+        <result column="ORG_UUID" jdbcType="VARCHAR" property="orgUuid"/>
+        <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+        <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+        <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+        <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+        <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+        <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+        <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+        <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+        <!--关联到组织机构表-->
+        <association property="orgDictDto" javaType="com.demo.domain.model.sys.dto.TOrgDictDto">
+            <result column="TOD_ID" jdbcType="VARCHAR" property="id"/>
+            <result column="ORG_NAME" jdbcType="VARCHAR" property="orgName"/>
+            <result column="PARENT_UUID" jdbcType="VARCHAR" property="parentUuid"/>
+            <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+            <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+            <result column="REMARK" jdbcType="VARCHAR" property="remarks"/>
+            <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+            <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+            <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+            <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+            <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+        </association>
+        <!--关联到角色表-->
+        <collection property="sysRoleDtoList" ofType="com.demo.domain.model.sys.dto.TSysRoleDto">
+            <id column="TSR_ID" jdbcType="VARCHAR" property="id"/>
+            <result column="ROLE_NAME" jdbcType="VARCHAR" property="roleName"/>
+            <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+            <result column="PARENT_UUID" jdbcType="VARCHAR" property="parentUuid"/>
+            <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+            <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+            <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+            <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+            <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+            <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+            <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+        </collection>
+    </resultMap>
+
+    <sql id="sysRoleColumn">
+
+    </sql>
+
+    <select id="selectByVo" parameterType="com.demo.domain.model.sys.vo.TSysUserVO" resultMap="DTOResultMap">
+        SELECT
+        TSU.*,
+        TOD.ID AS TOD_ID,
+        TOD.*,
+        TSR.ID AS TSR_ID,
+        TSR.*
+        FROM
+        T_SYS_USER TSU
+        LEFT JOIN
+        T_ORG_DICT TOD
+        ON
+        TOD.ID = TSU.ORG_UUID
+        LEFT JOIN
+        T_ROLE_USER TRU
+        ON
+        TRU.USER_UUID = TSU.ID
+        LEFT JOIN
+        T_SYS_ROLE TSR
+        ON
+        TSR.ID = TRU.ROLE_UUID
+        WHERE
+        TSU.Del_Flag = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+        AND
+        TSU.WHETHER_ENABLE = ${@com.demo.common.model.enums.EnableStatusEnum@YES_ENUM.getCode()}
+        /* AND
+        TSR.DEL_FLAG = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+        AND
+        TSR.WHETHER_ENABLE = ${@com.demo.common.model.enums.EnableStatusEnum@YES_ENUM.getCode()}*/
+        AND
+        TOD.DEL_FLAG = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+        AND
+        TOD.WHETHER_ENABLE = ${@com.demo.common.model.enums.EnableStatusEnum@YES_ENUM.getCode()}
+        <if test="id != null and id != ''">
+            AND TSU.ID = #{id}
+        </if>
+        <if test="userAccount != null and userAccount != ''">
+            AND TSU.USER_ACCOUNT = #{userAccount}
+        </if>
+        <if test="userPassword != null and userPassword != ''">
+            AND TSU.USER_PASSWORD = #{userPassword}
+        </if>
+        <if test="userRealName != null and userRealName != ''">
+            AND TSU.USER_REAL_NAME = #{userRealName}
+        </if>
+    </select>
+
+    <select id="findModeListByDto" parameterType="com.demo.domain.model.sys.dto.TSysUserDto"
+            resultType="com.demo.domain.model.sys.dto.TSysUserDto">
+        SELECT
+        *
+        FROM
+        T_SYS_USER
+        WHERE
+        DEL_FLAG = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+        <if test="id != null and id != ''">
+            AND ID = #{id}
+        </if>
+    </select>
+
+    <select id="findUncheckedList" parameterType="com.demo.domain.model.sys.entity.TSysUser"
+            resultType="com.demo.domain.model.sys.entity.TSysUser">
+        SELECT
+        *
+        FROM
+        T_SYS_USER
+        <where>
+            DEL_FLAG = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+            AND
+            WHETHER_ENABLE =${@com.demo.common.model.enums.EnableStatusEnum@YES_ENUM.getCode()}
+            <if test="id != null and id != ''">
+                AND
+                ID
+                NOT IN
+                <foreach item="item" index="index" collection="id.split(',')" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--获取单一查询-->
+    <select id="findOne" resultType="com.demo.domain.model.sys.entity.TSysUser">
+        SELECT
+        *
+        FROM
+        T_SYS_USER
+        WHERE
+        1 = 1
+        <if test="id != null and id != ''">
+            AND ID = #{id}
+        </if>
+        <if test="userAccount != null and userAccount != ''">
+            AND USER_ACCOUNT = #{userAccount}
+        </if>
+    </select>
+
+    <select id="findDtoModelList" resultType="com.demo.domain.model.sys.dto.TSysUserDto">
+        SELECT
+        *
+        FROM
+        T_SYS_USER
+        WHERE
+        DEL_FLAG = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+        <if test="tvo.id != null and tvo.id != ''">
+            AND ID = #{tvo.id}
+        </if>
+        <if test="tvo.userAccount != null and tvo.userAccount != ''">
+            AND USER_ACCOUNT = #{tvo.userAccount}
+        </if>
+        <if test="tvo.userPassword != null and tvo.userPassword != ''">
+            AND USER_PASSWORD = #{tvo.userPassword}
+        </if>
+        <if test="tvo.userRealName != null and tvo.userRealName != ''">
+            AND USER_REAL_NAME = #{tvo.userRealName}
+        </if>
+        <if test="tvo.userGender != null and tvo.userGender != ''">
+            AND USER_GENDER = #{tvo.userGender}
+        </if>
+        <if test="tvo.userTelephone != null and tvo.userTelephone != ''">
+            AND USER_TELEPHONE = #{tvo.userTelephone}
+        </if>
+        <if test="tvo.orgUuid != null and tvo.orgUuid != ''">
+            AND ORG_UUID = #{tvo.orgUuid}
+        </if>
+        <if test="tvo.remark != null and tvo.remark != ''">
+            AND REMARK = #{tvo.remark}
+        </if>
+        <if test="tvo.whetherEnable != null and tvo.whetherEnable != ''">
+            and WHETHER_ENABLE = #{tvo.whetherEnable}
+        </if>
+        <if test="tvo.inputCode != null and tvo.inputCode != ''">
+            and INPUT_CODE = #{tvo.inputCode}
+        </if>
+        <if test="tvo.userRealNameOrInputCode != null and tvo.userRealNameOrInputCode != ''">
+            AND (USER_REAL_NAME like '%'||#{tvo.userRealNameOrInputCode}||'%' OR INPUT_CODE LIKE
+            '%'||#{tvo.userRealNameOrInputCode}||'%')
+        </if>
+    </select>
+</mapper>

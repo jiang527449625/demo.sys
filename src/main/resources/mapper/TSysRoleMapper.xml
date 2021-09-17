@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.sys.dao.TSysRoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.demo.domain.model.sys.entity.TSysRole">
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="ROLE_NAME" jdbcType="VARCHAR" property="roleName"/>
+        <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+        <result column="PARENT_UUID" jdbcType="VARCHAR" property="parentUuid"/>
+        <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+        <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+        <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+        <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+        <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+        <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+        <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+    </resultMap>
+
+    <sql id="common_where">
+        <where>
+            t.DEL_FLAG = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+            <if test="whetherEnable != null and whetherEnable != ''">
+                and t.WHETHER_ENABLE =${@com.demo.common.model.enums.EnableStatusEnum@YES_ENUM.getCode()}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="common_where_if">
+        <if test="roleNameOrInputCode != null and roleNameOrInputCode != ''">
+            and (t.ROLE_NAME like '%'||#{roleNameOrInputCode}||'%' or t.INPUT_CODE like
+            '%'||#{roleNameOrInputCode}||'%')
+        </if>
+        <if test="userUuidList != null and userUuidList.size() > 0">
+            and exists (
+            select USER_UUID from T_ROLE_USER where t.id = USER_UUID and USER_UUID in
+            <foreach item="item" index="index" collection="userUuidList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            )
+        </if>
+        <if test="roleUuidList != null and roleUuidList.size() > 0">
+            and exists (
+            select ROLE_UUID from T_ROLE_USER where t.id = ROLE_UUID and ROLE_UUID in
+            <foreach item="item" index="index" collection="roleUuidList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            )
+        </if>
+    </sql>
+
+    <!--获取树形角色列表-->
+    <select id="selectByDto" parameterType="com.demo.domain.model.sys.vo.TSysRoleVO"
+            resultType="com.demo.domain.model.sys.dto.TSysRoleDto">
+        select
+        t.*
+        from
+        T_SYS_ROLE t
+        <include refid="common_where"/>
+        <include refid="common_where_if"/>
+        connect by
+        t.id = PRIOR t.parent_uuid
+        union
+        select
+        t.*
+        from
+        T_SYS_ROLE t
+        <include refid="common_where"/>
+        <include refid="common_where_if"/>
+        connect by
+        PRIOR t.id = t.parent_uuid
+    </select>
+
+    <!--向下递归获取角色信息-->
+    <select id="selectRolesByDownward" parameterType="com.demo.domain.model.sys.vo.TSysRoleVO"
+            resultType="com.demo.domain.model.sys.dto.TSysRoleDto">
+        select distinct t.ID,
+                t.ROLE_NAME,
+                t.REMARK,
+                t.PARENT_UUID,
+                t.CREATE_BY,
+                t.CREATE_AT,
+                t.UPDATE_BY,
+                t.UPDATE_AT,
+                t.WHETHER_ENABLE,
+                t.DEL_FLAG,
+                t.INPUT_CODE
+        from
+                T_SYS_ROLE t
+        start with
+                t.parent_uuid = #{id}
+        connect by PRIOR
+                t.id = t.parent_uuid
+    </select>
+
+    <select id="findOne" parameterType="com.demo.domain.model.sys.entity.TSysRole"
+            resultType="com.demo.domain.model.sys.entity.TSysRole">
+        select
+        *
+        from
+        T_SYS_ROLE
+        WHERE
+        1 = 1
+        <if test="id != null and id != ''">
+            and id = #{id}
+        </if>
+    </select>
+
+    <!--向上递归获取根节点-->
+    <select id="selectRolesByUpward" resultType="com.demo.domain.model.sys.dto.TSysRoleDto">
+        select distinct t.ID,
+                t.ROLE_NAME,
+                t.REMARK,
+                t.PARENT_UUID,
+                t.CREATE_BY,
+                t.CREATE_AT,
+                t.UPDATE_BY,
+                t.UPDATE_AT,
+                t.WHETHER_ENABLE,
+                t.DEL_FLAG,
+                t.INPUT_CODE
+        from
+                T_SYS_ROLE t
+        where
+                t.parent_uuid = '0'
+        start with
+                t.id = #{id}
+        connect by
+                t.id = PRIOR t.parent_uuid
+    </select>
+
+    <!--获取当前节点的上一节点数据-->
+    <select id="selectRolesWithUpperLevel" parameterType="com.demo.domain.model.sys.vo.TSysRoleVO"
+            resultType="com.demo.domain.model.sys.dto.TSysRoleDto">
+        select distinct t2.ID,
+                t2.ROLE_NAME,
+                t2.REMARK,
+                t2.PARENT_UUID,
+                t2.CREATE_BY,
+                t2.CREATE_AT,
+                t2.UPDATE_BY,
+                t2.UPDATE_AT,
+                t2.WHETHER_ENABLE,
+                t2.DEL_FLAG,
+                t2.INPUT_CODE
+        from
+                T_SYS_ROLE t1,
+                T_SYS_ROLE t2
+        where
+                t1.parent_uuid = t2.id
+        and
+                t1.id = #{id}
+    </select>
+</mapper>

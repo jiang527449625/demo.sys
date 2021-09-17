@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.sys.dao.SysLogMapper">
+  <resultMap id="BaseResultMap" type="com.demo.domain.model.sys.entity.SysLog">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="ID" jdbcType="VARCHAR" property="id"/>
+    <result column="LOG_MODULAR" jdbcType="VARCHAR" property="logModular" />
+    <result column="LOG_EXPLAIN" jdbcType="VARCHAR" property="logExplain" />
+    <result column="CREATOR" jdbcType="VARCHAR" property="creator" />
+    <result column="CREATE_TIME" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="UPDATOR" jdbcType="VARCHAR" property="updator" />
+    <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="LOG_RESULT" jdbcType="VARCHAR" property="logResult" />
+    <result column="LOG_REMARK" jdbcType="VARCHAR" property="logRemark" />
+    <result column="LOG_PARAM" jdbcType="VARCHAR" property="logParam" />
+    <result column="LOG_IP" jdbcType="VARCHAR" property="logIp" />
+  </resultMap>
+
+  <select id="selectTableNameByList" resultType="java.util.Map">
+    select * from ${tableName} where id = #{id}
+  </select>
+</mapper>

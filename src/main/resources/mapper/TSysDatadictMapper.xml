@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.sys.dao.TSysDatadictMapper">
+    <resultMap id="BaseResultMap" type="com.demo.domain.model.sys.entity.TSysDatadict">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="TYPE" jdbcType="VARCHAR" property="type"/>
+        <result column="VALUE" jdbcType="VARCHAR" property="value"/>
+        <result column="DISPLAY" jdbcType="VARCHAR" property="display"/>
+        <result column="SORT" jdbcType="DECIMAL" property="sort"/>
+        <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+        <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+        <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+        <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+        <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+        <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+        <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+        <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+    </resultMap>
+
+    <select id="findModelList" resultMap="BaseResultMap">
+        select t.* from t_sys_datadict t
+        <where>
+            1=1 and t.del_flag = 0
+            <if test="tvo.whetherEnable != null and tvo.whetherEnable != ''">
+                and t.whether_enable = #{tvo.whetherEnable}
+            </if>
+            <if test="tvo.id != null and tvo.id != ''">
+                and t.id = #{tvo.id}
+            </if>
+            <if test="tvo.type != null and tvo.type != ''">
+                and t.type = #{tvo.type}
+            </if>
+            <if test="tvo.value != null and tvo.value != ''">
+                and t.value = #{tvo.value}
+            </if>
+            <if test="tvo.display != null and tvo.display != ''">
+                and (t.display like '%'||#{tvo.display}||'%' or t.input_code like '%'||#{tvo.display}||'%')
+            </if>
+        </where>
+    </select>
+</mapper>

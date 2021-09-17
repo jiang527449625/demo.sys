@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.sys.dao.TSysParamMapper">
+    <resultMap id="BaseResultMap" type="com.demo.domain.model.sys.entity.TSysParam">
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="SP_CODE" jdbcType="VARCHAR" property="spCode"/>
+        <result column="SP_NAME" jdbcType="VARCHAR" property="spName"/>
+        <result column="SP_VALUE" jdbcType="VARCHAR" property="spValue"/>
+        <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+        <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+        <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+        <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+        <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+        <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+        <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+        <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+    </resultMap>
+
+    <select id="findDtoModelList" resultType="com.demo.domain.model.sys.dto.TSysParamDto">
+        select t.* from T_SYS_PARAM t
+        <where>
+            1=1 and t.del_flag = 0
+            <if test="tvo.whetherEnable != null and tvo.whetherEnable != ''">
+                and t.WHETHER_ENABLE = #{tvo.whetherEnable}
+            </if>
+            <if test="tvo.id != null and tvo.id != ''">
+                and t.id = #{tvo.id}
+            </if>
+            <if test="tvo.spCode != null and tvo.spCode != ''">
+                and t.sp_code = #{tvo.spCode}
+            </if>
+            <if test="tvo.paramNameOrInputCode != null and tvo.paramNameOrInputCode != ''">
+                and (t.sp_name like '%'||#{tvo.paramNameOrInputCode}||'%' or t.input_code like
+                '%'||#{tvo.paramNameOrInputCode}||'%')
+            </if>
+            <if test="tvo.spValue != null and tvo.spValue != ''">
+                and t.sp_value like '%'||#{tvo.spValue}||'%'
+            </if>
+        </where>
+    </select>
+</mapper>

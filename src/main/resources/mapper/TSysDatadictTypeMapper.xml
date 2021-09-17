@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.sys.dao.TSysDatadictTypeMapper">
+    <resultMap id="BaseResultMap" type="com.demo.domain.model.sys.entity.TSysDatadictType">
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="TYPE" jdbcType="VARCHAR" property="type"/>
+        <result column="NAME" jdbcType="VARCHAR" property="name"/>
+        <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+        <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+        <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+        <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+        <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+        <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+        <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+        <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+    </resultMap>
+
+    <select id="findModelList" resultMap="BaseResultMap">
+        select t.* from t_sys_datadict_type t
+        <where>1=1 and t.del_flag = 0
+            <if test="tvo.whetherEnable != null and tvo.whetherEnable != ''">
+                and t.whether_enable = #{tvo.whetherEnable}
+            </if>
+            <if test="tvo.id != null and tvo.id != ''">
+                and t.id = #{tvo.id}
+            </if>
+            <if test="tvo.name != null and tvo.name != ''">
+                and (t.type like '%'||#{tvo.name}||'%' or t.name like '%'||#{tvo.name}||'%' or t.input_code like
+                '%'||#{tvo.name}||'%')
+            </if>
+        </where>
+        ORDER BY CREATE_AT DESC
+    </select>
+</mapper>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.sys.dao.TOrgDictMapper">
+    <resultMap id="BaseResultMap" type="com.demo.domain.model.sys.entity.TOrgDict">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="ORG_NAME" jdbcType="VARCHAR" property="orgName"/>
+        <result column="PARENT_UUID" jdbcType="VARCHAR" property="parentUuid"/>
+        <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+        <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+        <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+        <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+        <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+        <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+        <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+        <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+    </resultMap>
+
+    <sql id="common_where">
+        <where>t.del_flag = 0
+            <if test="whetherEnable != null and whetherEnable != ''">
+                and t.whether_enable = #{whetherEnable}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="common_where_if">
+        <if test="id != null and id != ''">
+            and t.id = #{id}
+        </if>
+        <if test="parentUuid != null and parentUuid != ''">
+            and t.parentUuid = #{parentUuid}
+        </if>
+        <if test="orgNameOrInputCode != null and orgNameOrInputCode != ''">
+            and (t.org_name like '%'||#{orgNameOrInputCode}||'%' or t.input_code like '%'||#{orgNameOrInputCode}||'%')
+        </if>
+    </sql>
+
+    <select id="findListByVo" parameterType="com.demo.domain.model.sys.vo.TOrgDictVO"
+            resultType="com.demo.domain.model.sys.dto.TOrgDictDto">
+        select t.* from T_ORG_DICT t
+        <include refid="common_where"/>
+        <include refid="common_where_if"></include>
+        connect by t.id = PRIOR t.parent_uuid
+        union
+        select t.* from T_ORG_DICT t
+        <include refid="common_where"/>
+        <include refid="common_where_if"></include>
+        connect by PRIOR t.id = t.parent_uuid
+    </select>
+
+    <select id="findUserOrgListByVo" parameterType="com.demo.domain.model.sys.vo.TOrgDictVO"
+            resultType="com.demo.domain.model.sys.dto.TOrgDictDto">
+        select distinct t.* from T_ORG_DICT t
+        <include refid="common_where"/>
+        connect by PRIOR t.id = t.parent_uuid
+        start with 1=1
+        <include refid="common_where_if"></include>
+    </select>
+
+    <select id="findModelByVo" parameterType="com.demo.domain.model.sys.vo.TOrgDictVO"
+            resultType="com.demo.domain.model.sys.dto.TOrgDictDto">
+        SELECT
+        *
+        FROM
+        T_ORG_DICT
+        WHERE
+        DEL_FLAG = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+        AND
+        WHETHER_ENABLE =${@com.demo.common.model.enums.EnableStatusEnum@YES_ENUM.getCode()}
+        <if test="id != null and id != ''">
+            and id = #{id}
+        </if>
+        <if test="parentUuid != null and parentUuid != ''">
+            and parentUuid = #{parentUuid}
+        </if>
+        <if test="orgNameOrInputCode != null and orgNameOrInputCode != ''">
+            and (org_name like '%'||#{orgNameOrInputCode}||'%' or input_code like '%'||#{orgNameOrInputCode}||'%')
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.sys.dao.SysCustomerFormMapper">
+    <resultMap id="BaseResultMap" type="com.demo.domain.model.sys.entity.SysCustomerForm">
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="FORM_NAME" jdbcType="VARCHAR" property="formName"/>
+        <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+        <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+        <result column="REMARKS" jdbcType="VARCHAR" property="remarks"/>
+        <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+        <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+        <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+        <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+        <result column="FORM_FILE" jdbcType="BLOB" property="formFile"/>
+        <result column="FORM_JSON" jdbcType="BLOB" property="formJson"/>
+    </resultMap>
+
+    <select id="findDtoModelList" resultType="com.demo.domain.model.sys.dto.SysCustomerFormDto">
+        SELECT
+        *
+        FROM
+        SYS_CUSTOMER_FORM
+        WHERE
+        DEL_FLAG = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+        <if test="tvo.id != null and tvo.id != ''">
+            AND ID = #{tvo.id}
+        </if>
+        <if test="tvo.formName != null and tvo.formName != ''">
+            AND FORM_NAME LIKE '%'||#{tvo.formName}||'%'
+        </if>
+        <if test="tvo.remarks != null and tvo.remarks != ''">
+            AND REMARKS = #{tvo.remarks}
+        </if>
+        <if test="tvo.whetherEnable != null and tvo.whetherEnable != ''">
+            and WHETHER_ENABLE = #{tvo.whetherEnable}
+        </if>
+        <if test="tvo.formNameOrInputCode != null and tvo.formNameOrInputCode != ''">
+            AND (FORM_NAME like '%'||#{tvo.formNameOrInputCode}||'%' OR INPUT_CODE LIKE
+            '%'||#{tvo.formNameOrInputCode}||'%')
+        </if>
+    </select>
+</mapper>

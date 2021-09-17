@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.sys.dao.TMenuDictMapper">
+    <resultMap id="BaseResultMap" type="com.demo.domain.model.sys.entity.TMenuDict">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="ID" jdbcType="VARCHAR" property="id"/>
+        <result column="PARENT_UUID" jdbcType="VARCHAR" property="parentUuid"/>
+        <result column="PARENT_UUIDS" jdbcType="VARCHAR" property="parentUuids"/>
+        <result column="MENU_NAME" jdbcType="VARCHAR" property="menuName"/>
+        <result column="MENU_HREF" jdbcType="VARCHAR" property="menuHref"/>
+        <result column="MENU_ICON" jdbcType="VARCHAR" property="menuIcon"/>
+        <result column="WHETHER_ENABLE" jdbcType="CHAR" property="whetherEnable"/>
+        <result column="SORT" jdbcType="DECIMAL" property="sort"/>
+        <result column="DEL_FLAG" jdbcType="CHAR" property="delFlag"/>
+        <result column="CREATE_BY" jdbcType="VARCHAR" property="createBy"/>
+        <result column="CREATE_AT" jdbcType="TIMESTAMP" property="createAt"/>
+        <result column="UPDATE_BY" jdbcType="VARCHAR" property="updateBy"/>
+        <result column="UPDATE_AT" jdbcType="TIMESTAMP" property="updateAt"/>
+        <result column="REMARK" jdbcType="VARCHAR" property="remark"/>
+        <result column="MENU_TYPE" jdbcType="CHAR" property="menuType"/>
+        <result column="INPUT_CODE" jdbcType="VARCHAR" property="inputCode"/>
+        <result column="MENU_ASSEMBLY_HREF" jdbcType="VARCHAR" property="menuAssemblyHref"/>
+        <result column="HIDE_FLAG" jdbcType="VARCHAR" property="hideFlag"/>
+    </resultMap>
+
+    <sql id="common_where">
+        <where>t.del_flag = 0
+            <if test="whetherEnable != null and whetherEnable != ''">
+                and t.whether_enable = #{whetherEnable}
+            </if>
+        </where>
+    </sql>
+
+    <sql id="common_where_if">
+        <if test="menuNameOrInputCode != null and menuNameOrInputCode != ''">
+            and (t.menu_name like '%'||#{menuNameOrInputCode}||'%' or t.input_code like
+            '%'||#{menuNameOrInputCode}||'%')
+        </if>
+        <if test="ruUuidList != null and ruUuidList.size() > 0">
+            and exists (
+            select menu_uuid from t_role_user_menu where t.id = menu_uuid and ru_uuid in
+            <foreach item="item" index="index" collection="ruUuidList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            )
+        </if>
+    </sql>
+
+    <!--更新操作-->
+    <update id="updateModel">
+        UPDATE
+            T_MENU_DICT
+        SET
+            MENU_ASSEMBLY_HREF = null
+        WHERE
+            MENU_ASSEMBLY_HREF = #{menuAssemblyHref}
+    </update>
+
+    <select id="selectByDto" parameterType="com.demo.domain.model.sys.vo.TMenuDictVO"
+            resultType="com.demo.domain.model.sys.dto.TMenuDictDto">
+        select
+        t.*
+        from
+        T_MENU_DICT t
+        <include refid="common_where"/>
+        start with
+        1=1
+        <include refid="common_where_if"/>
+        connect by
+        PRIOR t.parent_uuid = t.id
+        union
+        select
+        t.*
+        from
+        T_MENU_DICT t
+        <include refid="common_where"/>
+        start with
+        1=1
+        <include refid="common_where_if"/>
+        connect by PRIOR t.id = t.parent_uuid
+    </select>
+
+    <!--查询当前角色/用户对应的菜单集合-->
+    <select id="selectCurrentByDto" parameterType="com.demo.domain.model.sys.vo.TMenuDictVO"
+            resultType="com.demo.domain.model.sys.dto.TMenuDictDto">
+        select distinct
+        t.*
+        from
+        T_MENU_DICT t
+        <include refid="common_where"/>
+        start with
+        1=1
+        <include refid="common_where_if"/>
+        connect by
+        PRIOR t.parent_uuid = t.id
+    </select>
+
+    <!--获取当前已经选中的所有按钮-->
+    <select id="findCheckedModelList" parameterType="com.demo.domain.model.sys.vo.TMenuDictVO"
+            resultType="com.demo.domain.model.sys.entity.TMenuDict">
+        SELECT
+        TMD.*
+        FROM
+        SYS_CUSTOMER_FORM SUF
+        LEFT JOIN
+        T_MENU_DICT TMD
+        ON
+        SUF.ID = TMD.MENU_ASSEMBLY_HREF
+        WHERE
+        TMD.MENU_TYPE = #{menuType}
+        AND
+        SUF.DEL_FLAG = ${@com.demo.common.model.enums.DeleteStatusEnum@NO_ENUM.getCode() }
+        <if test="ruUuidList != null and ruUuidList.size() > 0">
+            AND
+            SUF.ID
+            NOT IN
+            <foreach item="item" index="index" collection="ruUuidList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+</mapper>
